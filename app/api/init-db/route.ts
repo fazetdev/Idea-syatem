@@ -1,4 +1,4 @@
-import { pool } from '@/lib/db';
+import { pool } from '../../../lib/db';
 
 export const runtime = 'nodejs';
 
@@ -10,7 +10,6 @@ export async function GET() {
         title TEXT NOT NULL,
         note TEXT NOT NULL,
         goal TEXT,
-        score TEXT,
         tags TEXT[],
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
