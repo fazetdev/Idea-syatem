@@ -1,57 +1,34 @@
-interface Idea {
-  id: string;
-  title: string;
-  refinedIdea: string;
-  goal: string;
-  status: string;
-  createdAt: string;
-}
-
-interface IdeaVaultProps {
-  loading: boolean;
-  ideas: Idea[];
-  openExecutionModal: (id: string) => void;
-  onActivate: (id: string) => void;
-  viewMode: string;
-}
-
-export function IdeaVault({ loading, ideas, openExecutionModal, onActivate, viewMode }: IdeaVaultProps) {
-  const filteredIdeas = ideas.filter(idea => 
-    viewMode === "Ideas" ? idea.status === "captured" : idea.status === "active"
+export function IdeaVault({ loading, ideas, viewMode, onActivate, openExecutionModal }: any) {
+  const filtered = ideas.filter((i: any) => 
+    viewMode === "Ideas" ? i.status === "captured" : i.status === "active"
   );
 
   return (
-    <div className="panel">
-      <div className="panel-header">
-        <div className="panel-title">{viewMode === "Ideas" ? "Inbox" : "Active Production"}</div>
-      </div>
-      <div className="panel-body">
-        {loading ? (
-          <div className="empty-state"><div className="stat-icon">◈</div><p>Loading ideas...</p></div>
-        ) : filteredIdeas.length === 0 ? (
-          <div className="empty-state">
-            <div className="stat-icon">{viewMode === "Ideas" ? "◈" : "⬡"}</div>
-            <p>{viewMode === "Ideas" ? "Inbox is clear." : "No active projects. Activate one from the Inbox."}</p>
+    <div className="vault-list">
+      {loading ? <p>Syncing...</p> : filtered.map((idea: any) => (
+        <div key={idea.id} className="idea-card" style={{ background: '#fff', border: '1px solid #eee', padding: '15px', borderRadius: '12px', marginBottom: '10px' }}>
+          <div style={{ fontWeight: 'bold' }}>{idea.title}</div>
+          <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>{idea.goal}</div>
+          
+          <div style={{ marginTop: '10px' }}>
+            {viewMode === "Ideas" ? (
+              <button 
+                onClick={() => onActivate(idea.id)}
+                style={{ width: '100%', background: 'var(--accent-gold)', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}
+              >
+                🚀 ACTIVATE PRODUCTION
+              </button>
+            ) : (
+              <button 
+                onClick={() => openExecutionModal(idea.id)}
+                style={{ width: '100%', background: '#2C2A28', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '11px' }}
+              >
+                ⚡ OPEN WORKSPACE
+              </button>
+            )}
           </div>
-        ) : (
-          <div className="ideas-feed">
-            {filteredIdeas.map((idea) => (
-              <div key={idea.id} className="idea-card">
-                <div className="idea-card-title">{idea.title}</div>
-                <div className="idea-card-goal">{idea.goal}</div>
-                <div className="idea-card-footer">
-                  <span className="idea-date">{new Date(idea.createdAt).toLocaleDateString()}</span>
-                  {idea.status === "captured" ? (
-                    <button className="btn-execute" onClick={() => onActivate(idea.id)}>🚀 Activate</button>
-                  ) : (
-                    <button className="btn-execute" onClick={() => openExecutionModal(idea.id)}>⚡ Plan Execution</button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
