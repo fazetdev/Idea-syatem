@@ -2,10 +2,9 @@ import { sql } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
-// GET /api/milestones?ideaId=123
-export async function GET(req: Request) {
+export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const ideaId = searchParams.get('ideaId');
 
     if (!ideaId) {
@@ -16,25 +15,32 @@ export async function GET(req: Request) {
     }
 
     const milestones = await sql`
-      SELECT *
+      SELECT 
+        id,
+        idea_id,
+        title,
+        description,
+        target_date,
+        status,
+        created_at
       FROM milestones
       WHERE idea_id = ${parseInt(ideaId)}
-      ORDER BY order_index ASC, created_at ASC
+      ORDER BY order_index ASC, id ASC
     `;
 
     return Response.json({ milestones });
-  } catch (err: any) {
+  } catch (error: any) {
+    console.error('GET /api/milestones error:', error);
     return Response.json(
-      { error: err.message },
+      { error: error.message || 'Failed to fetch milestones' },
       { status: 500 }
     );
   }
 }
 
-// POST /api/milestones
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
+    const body = await request.json();
     const { ideaId, title, description, targetDate } = body;
 
     if (!ideaId || !title) {
@@ -54,9 +60,10 @@ export async function POST(req: Request) {
       success: true, 
       milestone: result[0] 
     });
-  } catch (err: any) {
+  } catch (error: any) {
+    console.error('POST /api/milestones error:', error);
     return Response.json(
-      { error: err.message },
+      { error: error.message || 'Failed to create milestone' },
       { status: 500 }
     );
   }

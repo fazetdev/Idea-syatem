@@ -9,9 +9,10 @@ export async function DELETE(
 ) {
   try {
     const id = parseInt(params.id);
-    await sql`DELETE FROM ideas WHERE id = ${id}`;
+    await sql`DELETE FROM tasks WHERE id = ${id}`;
     return Response.json({ success: true });
   } catch (error: any) {
+    console.error('DELETE error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 }
