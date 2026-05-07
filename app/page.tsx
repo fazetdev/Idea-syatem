@@ -4,16 +4,12 @@ import { useState, useEffect } from "react";
 import { IdeaOSStyles } from "./components/IdeaOSStyles";
 import { IdeaForm } from "./components/IdeaForm";
 import { IdeaVault } from "./components/IdeaVault";
-import { ExecutionModal } from "./components/ExecutionModal";
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState("Ideas");
-  const [isInboxOpen, setIsInboxOpen] = useState(false);
-  const [activeExecutionId, setActiveExecutionId] = useState(null);
-  const [viewingTaskId, setViewingTaskId] = useState(null);
   const [form, setForm] = useState({ title: "", refinedIdea: "", goal: "" });
   const [saving, setSaving] = useState(false);
 
@@ -55,8 +51,8 @@ export default function HomePage() {
     });
     if (res.ok) {
       await fetchIdeas();
-      setActiveView(newStatus === 'active' ? "Execution Plans" : newStatus === 'milestone' ? "Milestones" : "Tasks");
-      setActiveExecutionId(null);
+      const viewMap: any = { 'active': 'Execution Plans', 'milestone': 'Milestones', 'task': 'Tasks' };
+      if (viewMap[newStatus]) setActiveView(viewMap[newStatus]);
     }
   }
 
@@ -65,8 +61,6 @@ export default function HomePage() {
     const res = await fetch(`/api/ideas?id=${id}`, { method: "DELETE" });
     if (res.ok) fetchIdeas();
   }
-
-  const selectedIdea = ideas.find((i: any) => i.id === (activeExecutionId || viewingTaskId));
 
   const statsCards = [
     { label: "Ideas", value: ideas.filter((i: any) => i.status === 'captured').length, icon: "◈" },
@@ -105,12 +99,12 @@ export default function HomePage() {
           {activeView === "Ideas" && (
             <div className="panel">
               <IdeaForm form={form} setForm={setForm} handleSave={handleSave} saving={saving} />
-              <button className="drawer-trigger" onClick={() => setIsInboxOpen(!isInboxOpen)} style={{marginTop:'20px', width:'100%', padding:'10px', background:'#eee', border:'none', borderRadius:'8px', fontWeight:'bold'}}>
-                {isInboxOpen ? "CLOSE INBOX" : "VIEW INBOX"}
-              </button>
-              {isInboxOpen && (
-                <IdeaVault ideas={ideas} viewMode="Ideas" onActivate={(id:any) => handleStatusChange(id, 'active')} onDelete={handleDelete} />
-              )}
+              <IdeaVault 
+                ideas={ideas} 
+                viewMode="Ideas" 
+                onActivate={(id:any) => handleStatusChange(id, 'active')} 
+                onDelete={handleDelete} 
+              />
             </div>
           )}
 
@@ -118,7 +112,7 @@ export default function HomePage() {
             <IdeaVault 
               ideas={ideas} 
               viewMode="Execution Plans" 
-              openExecutionModal={(id:any) => setActiveExecutionId(id)} 
+              handleStatusChange={handleStatusChange}
               onDelete={handleDelete}
             />
           )}
@@ -128,33 +122,19 @@ export default function HomePage() {
               ideas={ideas} 
               viewMode="Milestones" 
               onDelete={handleDelete}
-              openExecutionModal={(id:any) => setActiveExecutionId(id)}
               onPromoteToTask={(id:any) => handleStatusChange(id, 'task')}
             />
           )}
 
           {activeView === "Tasks" && (
-            <div className="panel">
-              <h2 style={{borderBottom:'1px solid #eee', paddingBottom:'10px'}}>Production Line</h2>
-              <IdeaVault 
-                ideas={ideas} 
-                viewMode="Tasks" 
-                onDelete={handleDelete}
-                openExecutionModal={(id:any) => setViewingTaskId(id)}
-              />
-            </div>
+            <IdeaVault 
+              ideas={ideas} 
+              viewMode="Tasks" 
+              onDelete={handleDelete}
+            />
           )}
         </div>
       </div>
-
-      {(activeExecutionId || viewingTaskId) && selectedIdea && (
-        <ExecutionModal 
-          idea={selectedIdea} 
-          onClose={() => { setActiveExecutionId(null); setViewingTaskId(null); }} 
-          onPromote={activeExecutionId ? (id:any) => handleStatusChange(id, 'milestone') : null}
-          isReadOnly={!!viewingTaskId}
-        />
-      )}
     </div>
   );
 }
