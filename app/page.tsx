@@ -54,11 +54,8 @@ export default function HomePage() {
     });
     if (res.ok) {
       await fetchIdeas();
-      if (newStatus === 'active') setActiveView("Execution Plans");
-      if (newStatus === 'milestone') {
-        setActiveView("Milestones");
-        setActiveExecutionId(null);
-      }
+      setActiveView(newStatus === 'active' ? "Execution Plans" : newStatus === 'milestone' ? "Milestones" : "Tasks");
+      setActiveExecutionId(null);
     }
   }
 
@@ -74,7 +71,7 @@ export default function HomePage() {
     { label: "Ideas", value: ideas.filter((i: any) => i.status === 'captured').length, icon: "◈" },
     { label: "Execution Plans", value: ideas.filter((i: any) => i.status === 'active').length, icon: "⬡" },
     { label: "Milestones", value: ideas.filter((i: any) => i.status === 'milestone').length, icon: "◎" },
-    { label: "Tasks", value: 0, icon: "▦" },
+    { label: "Tasks", value: ideas.filter((i: any) => i.status === 'task').length, icon: "▦" },
   ];
 
   if (!mounted) return null;
@@ -94,6 +91,7 @@ export default function HomePage() {
               key={s.label} 
               className={`stat-card ${activeView === s.label ? 'active-box' : ''}`}
               onClick={() => setActiveView(s.label)}
+              style={{ cursor: 'pointer' }}
             >
               <span className="stat-icon">{s.icon}</span>
               <div className="stat-value">{s.value}</div>
@@ -106,7 +104,7 @@ export default function HomePage() {
           {activeView === "Ideas" && (
             <div className="panel">
               <IdeaForm form={form} setForm={setForm} handleSave={handleSave} saving={saving} />
-              <button className="drawer-trigger" onClick={() => setIsInboxOpen(!isInboxOpen)} style={{marginTop:'20px', width:'100%', padding:'10px', background:'#eee', border:'none', borderRadius:'8px'}}>
+              <button className="drawer-trigger" onClick={() => setIsInboxOpen(!isInboxOpen)} style={{marginTop:'20px', width:'100%', padding:'10px', background:'#eee', border:'none', borderRadius:'8px', fontWeight:'bold'}}>
                 {isInboxOpen ? "CLOSE INBOX" : "VIEW INBOX"}
               </button>
               {isInboxOpen && (
@@ -125,13 +123,22 @@ export default function HomePage() {
           )}
 
           {activeView === "Milestones" && (
+            <IdeaVault 
+              ideas={ideas} 
+              viewMode="Milestones" 
+              onDelete={handleDelete}
+              openExecutionModal={(id:any) => setActiveExecutionId(id)}
+              onPromoteToTask={(id:any) => handleStatusChange(id, 'task')}
+            />
+          )}
+
+          {activeView === "Tasks" && (
             <div className="panel">
-              <h2>Active Milestones</h2>
+              <h2 style={{borderBottom:'1px solid #eee', paddingBottom:'10px'}}>Active Production Line</h2>
               <IdeaVault 
                 ideas={ideas} 
-                viewMode="Milestones" 
+                viewMode="Tasks" 
                 onDelete={handleDelete}
-                openExecutionModal={(id:any) => setActiveExecutionId(id)}
               />
             </div>
           )}
