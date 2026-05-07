@@ -34,3 +34,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 idea_system.db
+app/api/fix-delete/
+app/api/migrate-v2/
+app/api/milestones/toggle/
