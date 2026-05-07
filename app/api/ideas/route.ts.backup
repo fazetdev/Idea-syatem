@@ -1,0 +1,67 @@
+import { pool } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+
+export const runtime = 'nodejs';
+
+// GET /api/ideas - Fetch all ideas
+export async function GET() {
+  try {
+    const result = await pool.query(`
+      SELECT id, title, note, goal, tags, created_at 
+      FROM ideas 
+      ORDER BY created_at DESC
+    `);
+    
+    return NextResponse.json({ success: true, data: result.rows });
+  } catch (error: any) {
+    console.error('GET ideas error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/ideas - Create a new idea
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { title, note, goal, tags = [] } = body;
+    
+    // Validate required fields
+    if (!title || !note) {
+      return NextResponse.json(
+        { success: false, error: 'Title and note are required' },
+        { status: 400 }
+      );
+    }
+    
+    // Enforce 400 word limit for note
+    const wordCount = note.trim().split(/\s+/).length;
+    if (wordCount > 400) {
+      return NextResponse.json(
+        { success: false, error: 'Note must be 400 words or less' },
+        { status: 400 }
+      );
+    }
+    
+    const result = await pool.query(
+      `INSERT INTO ideas (title, note, goal, tags) 
+       VALUES ($1, $2, $3, $4) 
+       RETURNING id, title, note, goal, tags, created_at`,
+      [title, note, goal || null, tags]
+    );
+    
+    return NextResponse.json({ 
+      success: true, 
+      data: result.rows[0],
+      message: 'Idea created successfully'
+    }, { status: 201 });
+  } catch (error: any) {
+    console.error('POST idea error:', error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
