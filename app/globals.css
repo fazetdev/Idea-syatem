@@ -25,3 +25,105 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+/* ===== CORE LAYOUT FIX ===== */
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #0a1208;
+  color: #e8ead8;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* prevents “stuck to edge” look */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px 80px;
+}
+
+/* centered system container */
+.container {
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* navigation fix */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.logo {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+/* SECTION spacing consistency */
+.section {
+  margin-top: 24px;
+}
+
+/* EMPTY STATE */
+.empty {
+  text-align: center;
+  opacity: 0.6;
+  padding: 40px;
+}
+
+/* ===== INPUT FIX (your main bug source) ===== */
+input, textarea {
+  background: #142810;
+  border: 1px solid rgba(212,175,55,0.2);
+  color: #e8ead8;
+  padding: 10px 12px;
+  border-radius: 8px;
+  outline: none;
+}
+
+input:focus, textarea:focus {
+  border-color: rgba(212,175,55,0.5);
+}
+
+/* prevent “white text invisible” issue */
+::placeholder {
+  color: rgba(155,168,141,0.7);
+}
+
+/* ===== MODAL SAFETY ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  width: 95%;
+  max-width: 800px;
+  background: #0e1a0c;
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 16px;
+  padding: 24px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+/* TASK / MILESTONE VISIBILITY FIX */
+.milestone-item, .task-item {
+  background: #142810;
+  color: #e8ead8;
+  border: 1px solid rgba(212,175,55,0.12);
+}
+
+/* prevent text disappearing in nested UI */
+.milestone-item *, .task-item * {
+  color: #e8ead8;
+}

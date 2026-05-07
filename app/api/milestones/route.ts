@@ -8,10 +8,7 @@ export async function GET(request: Request) {
     const ideaId = searchParams.get('ideaId');
 
     if (!ideaId) {
-      return Response.json(
-        { error: 'ideaId is required' },
-        { status: 400 }
-      );
+      return Response.json({ milestones: [] });
     }
 
     const milestones = await sql`
@@ -25,16 +22,13 @@ export async function GET(request: Request) {
         created_at
       FROM milestones
       WHERE idea_id = ${parseInt(ideaId)}
-      ORDER BY order_index ASC, id ASC
+      ORDER BY id DESC
     `;
 
     return Response.json({ milestones });
   } catch (error: any) {
-    console.error('GET /api/milestones error:', error);
-    return Response.json(
-      { error: error.message || 'Failed to fetch milestones' },
-      { status: 500 }
-    );
+    console.error('GET milestones error:', error);
+    return Response.json({ milestones: [] }, { status: 500 });
   }
 }
 
@@ -45,25 +39,22 @@ export async function POST(request: Request) {
 
     if (!ideaId || !title) {
       return Response.json(
-        { error: 'ideaId and title are required' },
+        { error: 'ideaId and title required' },
         { status: 400 }
       );
     }
 
     const result = await sql`
-      INSERT INTO milestones (idea_id, title, description, target_date)
-      VALUES (${ideaId}, ${title}, ${description || ''}, ${targetDate || null})
+      INSERT INTO milestones (idea_id, title, description, target_date, status)
+      VALUES (${ideaId}, ${title}, ${description || ''}, ${targetDate || null}, 'pending')
       RETURNING *
     `;
 
-    return Response.json({ 
-      success: true, 
-      milestone: result[0] 
-    });
+    return Response.json({ milestone: result[0] });
   } catch (error: any) {
-    console.error('POST /api/milestones error:', error);
+    console.error('POST milestones error:', error);
     return Response.json(
-      { error: error.message || 'Failed to create milestone' },
+      { error: error.message },
       { status: 500 }
     );
   }

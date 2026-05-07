@@ -11,9 +11,14 @@ export async function GET(request: Request) {
       return Response.json({ tasks: [] });
     }
 
-    // Simple query that will work even if columns are missing
     const tasks = await sql`
-      SELECT id, milestone_id, task, duration_minutes, scheduled_time, status
+      SELECT 
+        id,
+        milestone_id,
+        task,
+        duration_minutes,
+        scheduled_time,
+        status
       FROM tasks
       WHERE milestone_id = ${parseInt(milestoneId)}
       ORDER BY id ASC
@@ -21,9 +26,8 @@ export async function GET(request: Request) {
 
     return Response.json({ tasks });
   } catch (error: any) {
-    console.error('GET /api/tasks error:', error);
-    // Return empty array instead of error to prevent frontend crashes
-    return Response.json({ tasks: [] });
+    console.error('GET tasks error:', error);
+    return Response.json({ tasks: [] }, { status: 500 });
   }
 }
 
@@ -34,23 +38,20 @@ export async function POST(request: Request) {
 
     if (!milestoneId || !task) {
       return Response.json(
-        { error: 'milestoneId and task are required' },
+        { error: 'milestoneId and task required' },
         { status: 400 }
       );
     }
 
     const result = await sql`
-      INSERT INTO tasks (milestone_id, task, duration_minutes, scheduled_time)
-      VALUES (${milestoneId}, ${task}, ${durationMinutes || null}, ${scheduledTime || null})
+      INSERT INTO tasks (milestone_id, task, duration_minutes, scheduled_time, status)
+      VALUES (${milestoneId}, ${task}, ${durationMinutes || null}, ${scheduledTime || null}, 'pending')
       RETURNING *
     `;
 
-    return Response.json({ 
-      success: true, 
-      task: result[0] 
-    });
+    return Response.json({ task: result[0] });
   } catch (error: any) {
-    console.error('POST /api/tasks error:', error);
+    console.error('POST tasks error:', error);
     return Response.json(
       { error: error.message },
       { status: 500 }

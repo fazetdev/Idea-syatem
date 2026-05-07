@@ -3,16 +3,33 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'nodejs';
 
-export async function DELETE(
+// UPDATE task (toggle completion / edit)
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const id = parseInt(params.id);
-    await sql`DELETE FROM tasks WHERE id = ${id}`;
-    return Response.json({ success: true });
+    const body = await request.json();
+
+    const { task, duration_minutes, status } = body;
+
+    const result = await sql`
+      UPDATE tasks
+      SET 
+        task = COALESCE(${task}, task),
+        duration_minutes = COALESCE(${duration_minutes}, duration_minutes),
+        status = COALESCE(${status}, status)
+      WHERE id = ${id}
+      RETURNING *
+    `;
+
+    return Response.json({ task: result[0] });
   } catch (error: any) {
-    console.error('DELETE error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('TASK PUT error:', error);
+    return Response.json(
+      { error: error.message },
+      { status: 500 }
+    );
   }
 }
