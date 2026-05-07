@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     if (!title || !refinedIdea || !goal) {
       return Response.json(
-        { error: 'Title, refined idea, and goal are required' },
+        { error: 'Missing fields' },
         { status: 400 }
       );
     }
@@ -39,13 +39,19 @@ export async function POST(req: Request) {
     const result = await sql`
       INSERT INTO ideas (title, note, goal, tags)
       VALUES (${title}, ${refinedIdea}, ${goal}, ARRAY[]::text[])
-      RETURNING *
+      RETURNING 
+        id::text as id,
+        title,
+        note as "refinedIdea",
+        goal,
+        created_at as "createdAt"
     `;
 
-    return Response.json({ 
-      success: true, 
-      idea: result[0] 
+    return Response.json({
+      success: true,
+      idea: result[0]
     });
+
   } catch (err: any) {
     return Response.json(
       { error: err.message },
