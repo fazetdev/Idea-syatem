@@ -250,7 +250,7 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a1208" }}>
+    <div className="main-wrapper">
       <IdeaOSStyles />
 
       <div className="shell">
