@@ -46,15 +46,19 @@ export default function HomePage() {
     } catch (e) { console.error(e); } finally { setSaving(false); }
   }
 
-  async function handleActivate(id: string) {
+  async function handleStatusChange(id: string, newStatus: string) {
     const res = await fetch("/api/ideas/status", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status: "active" }),
+      body: JSON.stringify({ id, status: newStatus }),
     });
     if (res.ok) {
       await fetchIdeas();
-      setActiveView("Execution Plans");
+      if (newStatus === 'active') setActiveView("Execution Plans");
+      if (newStatus === 'milestone') {
+        setActiveView("Milestones");
+        setActiveExecutionId(null);
+      }
     }
   }
 
@@ -69,7 +73,7 @@ export default function HomePage() {
   const statsCards = [
     { label: "Ideas", value: ideas.filter((i: any) => i.status === 'captured').length, icon: "◈" },
     { label: "Execution Plans", value: ideas.filter((i: any) => i.status === 'active').length, icon: "⬡" },
-    { label: "Milestones", value: 0, icon: "◎" },
+    { label: "Milestones", value: ideas.filter((i: any) => i.status === 'milestone').length, icon: "◎" },
     { label: "Tasks", value: 0, icon: "▦" },
   ];
 
@@ -106,7 +110,7 @@ export default function HomePage() {
                 {isInboxOpen ? "CLOSE INBOX" : "VIEW INBOX"}
               </button>
               {isInboxOpen && (
-                <IdeaVault ideas={ideas} viewMode="Ideas" onActivate={handleActivate} onDelete={handleDelete} />
+                <IdeaVault ideas={ideas} viewMode="Ideas" onActivate={(id:any) => handleStatusChange(id, 'active')} onDelete={handleDelete} />
               )}
             </div>
           )}
@@ -119,6 +123,18 @@ export default function HomePage() {
               onDelete={handleDelete}
             />
           )}
+
+          {activeView === "Milestones" && (
+            <div className="panel">
+              <h2>Active Milestones</h2>
+              <IdeaVault 
+                ideas={ideas} 
+                viewMode="Milestones" 
+                onDelete={handleDelete}
+                openExecutionModal={(id:any) => setActiveExecutionId(id)}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -126,6 +142,7 @@ export default function HomePage() {
         <ExecutionModal 
           idea={selectedIdea} 
           onClose={() => setActiveExecutionId(null)} 
+          onPromote={(id:any) => handleStatusChange(id, 'milestone')}
         />
       )}
     </div>
