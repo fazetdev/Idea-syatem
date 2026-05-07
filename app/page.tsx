@@ -13,6 +13,7 @@ export default function HomePage() {
   const [activeView, setActiveView] = useState("Ideas");
   const [isInboxOpen, setIsInboxOpen] = useState(false);
   const [activeExecutionId, setActiveExecutionId] = useState(null);
+  const [viewingTaskId, setViewingTaskId] = useState(null);
   const [form, setForm] = useState({ title: "", refinedIdea: "", goal: "" });
   const [saving, setSaving] = useState(false);
 
@@ -65,7 +66,7 @@ export default function HomePage() {
     if (res.ok) fetchIdeas();
   }
 
-  const selectedIdea = ideas.find((i: any) => i.id === activeExecutionId);
+  const selectedIdea = ideas.find((i: any) => i.id === (activeExecutionId || viewingTaskId));
 
   const statsCards = [
     { label: "Ideas", value: ideas.filter((i: any) => i.status === 'captured').length, icon: "◈" },
@@ -134,22 +135,24 @@ export default function HomePage() {
 
           {activeView === "Tasks" && (
             <div className="panel">
-              <h2 style={{borderBottom:'1px solid #eee', paddingBottom:'10px'}}>Active Production Line</h2>
+              <h2 style={{borderBottom:'1px solid #eee', paddingBottom:'10px'}}>Production Line</h2>
               <IdeaVault 
                 ideas={ideas} 
                 viewMode="Tasks" 
                 onDelete={handleDelete}
+                openExecutionModal={(id:any) => setViewingTaskId(id)}
               />
             </div>
           )}
         </div>
       </div>
 
-      {activeExecutionId && selectedIdea && (
+      {(activeExecutionId || viewingTaskId) && selectedIdea && (
         <ExecutionModal 
           idea={selectedIdea} 
-          onClose={() => setActiveExecutionId(null)} 
-          onPromote={(id:any) => handleStatusChange(id, 'milestone')}
+          onClose={() => { setActiveExecutionId(null); setViewingTaskId(null); }} 
+          onPromote={activeExecutionId ? (id:any) => handleStatusChange(id, 'milestone') : null}
+          isReadOnly={!!viewingTaskId}
         />
       )}
     </div>

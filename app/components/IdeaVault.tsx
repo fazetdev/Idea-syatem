@@ -57,6 +57,15 @@ export function IdeaVault({ ideas, viewMode, onActivate, onDelete, openExecution
                   </button>
                 </>
               )}
+
+              {viewMode === "Tasks" && (
+                <button 
+                  onClick={() => openExecutionModal(idea.id)}
+                  style={{ width: '100%', background: '#2ecc71', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}
+                >
+                  👁 VIEW PRODUCTION DETAILS
+                </button>
+              )}
             </div>
           </div>
         ))
