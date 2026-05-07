@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { IdeaOSStyles } from "./components/IdeaOSStyles";
 import { IdeaForm } from "./components/IdeaForm";
 import { IdeaVault } from "./components/IdeaVault";
+import { ExecutionModal } from "./components/ExecutionModal";
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
@@ -11,7 +12,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState("Ideas");
   const [isInboxOpen, setIsInboxOpen] = useState(false);
-  const [activeExecution, setActiveExecution] = useState(null);
+  const [activeExecutionId, setActiveExecutionId] = useState(null);
   const [form, setForm] = useState({ title: "", refinedIdea: "", goal: "" });
   const [saving, setSaving] = useState(false);
 
@@ -63,6 +64,8 @@ export default function HomePage() {
     if (res.ok) fetchIdeas();
   }
 
+  const selectedIdea = ideas.find((i: any) => i.id === activeExecutionId);
+
   const statsCards = [
     { label: "Ideas", value: ideas.filter((i: any) => i.status === 'captured').length, icon: "◈" },
     { label: "Execution Plans", value: ideas.filter((i: any) => i.status === 'active').length, icon: "⬡" },
@@ -112,19 +115,18 @@ export default function HomePage() {
             <IdeaVault 
               ideas={ideas} 
               viewMode="Execution Plans" 
-              openExecutionModal={(id:any) => setActiveExecution(id)} 
+              openExecutionModal={(id:any) => setActiveExecutionId(id)} 
               onDelete={handleDelete}
             />
           )}
         </div>
       </div>
 
-      {activeExecution && (
-        <div className="modal" style={{position:'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.9)', color:'#fff', padding:'20px', zIndex:2000}}>
-          <h2>Workstation: {ideas.find((i:any)=>i.id === activeExecution)?.title}</h2>
-          <button onClick={() => setActiveExecution(null)} style={{background:'red', color:'#fff', padding:'10px', border:'none', borderRadius:'5px'}}>CLOSE</button>
-          <div style={{marginTop:'20px'}}>Production Logic Ready for Deployment.</div>
-        </div>
+      {activeExecutionId && selectedIdea && (
+        <ExecutionModal 
+          idea={selectedIdea} 
+          onClose={() => setActiveExecutionId(null)} 
+        />
       )}
     </div>
   );
